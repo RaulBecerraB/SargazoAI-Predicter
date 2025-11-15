@@ -39,6 +39,11 @@ class SargazoPredictor:
         self.TARGETS = list(self.config["TARGETS"])
         self.ALL_COLS = list(self.config["ALL_COLS"])
 
+        # sanity check: FEATURES must be a subset of ALL_COLS
+        for f in self.FEATURES:
+            if f not in self.ALL_COLS:
+                raise ValueError(f"Feature '{f}' listed in FEATURES not found in ALL_COLS in config")
+
         # load scaler
         with open(self.scaler_path, "rb") as f:
             self.scaler = pickle.load(f)
@@ -63,11 +68,14 @@ class SargazoPredictor:
         self.lon_next_idx = self.ALL_COLS.index(self.TARGETS[1])
 
     def preprocess_sequence(self, new_data_sequence: List[List[float]]):
-        """Escala y da forma a la secuencia de entrada.
+        """Scale and shape the input sequence for the model.
 
-        new_data_sequence: lista de N_STEPS filas, cada fila = [lat, lon, speed_m_s, direction_rad]
+        The function is configuration-driven: the number and names of features
+        expected are read from the `sargazo_config.json` (self.FEATURES).
 
-        Retorna: ndarray con forma (1, N_STEPS, N_FEATURES)
+        new_data_sequence: list of N_STEPS rows, each row with len(self.FEATURES) floats.
+
+        Returns: ndarray shaped (1, N_STEPS, N_FEATURES)
         """
         arr = np.array(new_data_sequence, dtype=float)
         if arr.ndim != 2:
@@ -77,7 +85,8 @@ class SargazoPredictor:
             raise ValueError(f"La secuencia debe tener {self.N_STEPS} filas (pasos). Se recibieron {arr.shape[0]}")
 
         if arr.shape[1] != len(self.FEATURES):
-            raise ValueError(f"Cada fila debe tener {len(self.FEATURES)} features. Se recibieron {arr.shape[1]}")
+            raise ValueError(
+                f"Each row must have {len(self.FEATURES)} features as defined in config.FEATURES; received {arr.shape[1]}.")
 
         # dummy matrix con todas las columnas que espera el scaler
         dummy = np.zeros((self.N_STEPS, len(self.ALL_COLS)), dtype=float)
