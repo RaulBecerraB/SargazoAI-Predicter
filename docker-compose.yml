@@ -1,0 +1,24 @@
+# Docker Compose for SargazoAI-Predicter
+version: '3.8'
+
+services:
+  sargazo-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sargazo-predictor
+    ports:
+      - "8000:8000"
+    environment:
+      - SARGAZO_MODEL_DIR=/app/models/coordinates
+      - SARGAZO_BIOMASA_MODEL_DIR=/app/models/biomasa
+    volumes:
+      # Optional: Mount models directory for easy updates without rebuilding
+      - ./models:/app/models:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
