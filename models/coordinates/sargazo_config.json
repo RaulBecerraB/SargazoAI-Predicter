@@ -1,0 +1,21 @@
+{
+    "N_STEPS": 5,
+    "FEATURES": [
+        "lat",
+        "lon",
+        "speed_m_s",
+        "direction_rad"
+    ],
+    "TARGETS": [
+        "lat_next",
+        "lon_next"
+    ],
+    "ALL_COLS": [
+        "lat",
+        "lon",
+        "speed_m_s",
+        "direction_rad",
+        "lat_next",
+        "lon_next"
+    ]
+}
